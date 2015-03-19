@@ -1,24 +1,29 @@
 #!/bin/bash
 mkdir -p bucket && cd bucket
-aws s3 sync s3://elife-ejp-poa-delivery .
+#aws s3 sync s3://elife-ejp-poa-delivery .
 
-rm -f tmp/*
-rmdir tmp/
+unzipdir=unzipped
 
+#rm -f $unzipdir/*
+#rmdir $unzipdir
+
+# extract the _merged_ pdf from the zip file
 for file in `ls *.zip`; do
-    if ! unzip -t $file 2> /dev/null; then
+    # test integrity of zip file, skip if it looks bad
+    if ! unzip -t $file 2>/dev/null 1>/dev/null; then
         echo "broken zip: $file"
         continue
     fi
-    unzip -o $file -d tmp
-    # remove all the noise
-    for subfile in `find tmp/ -type f | grep -v _merged_`; do
-        rm $subfile
-    done;
-    # test the remaining pdf
-    sh ../strip-coverletter.sh `ls tmp/*.pdf`
     
-    rm -f tmp/*
-    rmdir tmp
+    unzip -o -B $file *_merged_* -d $unzipdir 2>/dev/null 1>/dev/null
     
 done
+
+# test the pdfs
+for pdffile in `ls $unzipdir/*.pdf`; do
+    if ! sh ../strip-coverletter.sh $pdffile; then 
+        echo "failure in $pdffile"
+        break
+    fi
+    echo ""
+done;
