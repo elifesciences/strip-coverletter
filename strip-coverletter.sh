@@ -43,7 +43,9 @@ for i in {2..7}; do # first page is guaranteed to be part of the cover letter...
     echo converting page ${i} to text...
     pdftotext $explodeddir/$i\_$pdf $explodeddir/tmp.txt
     for j in {1..9}; do
-        match="`cat $explodeddir/tmp.txt | grep "^$j$" | head -n 1`"
+        #match="`cat $explodeddir/tmp.txt | grep "^$j$" | head -n 1`"
+        # this has a *slightly* more flexible regex
+        match="`cat $explodeddir/tmp.txt | grep "^$j.$" | head -n 1`"
         if [ "$match" = "" ]; then
             echo page ${i} is a cover letter, skipping.
             break
@@ -58,16 +60,24 @@ for i in {2..7}; do # first page is guaranteed to be part of the cover letter...
     fi
 done
 
-echo "writing pdf to $output_pdf ... "
-i=$ncp
-pathargs=""
-while [ "$i" -le "$total_pages" ]; do
-    pathargs="$pathargs -f $explodeddir/$i\_$pdf"
-    i=$(( $i + 1 ))
-done
-cmd="pdfsam-console -o $output_pdf $pathargs concat > /dev/null"
-eval $cmd
+if [ ! "$ncp" -gt -1 ]; then
+    echo "failed to detect end of cover letter!"
+    exit 1
+else
+
+    echo "writing pdf to $output_pdf ... "
+    i=$ncp
+    pathargs=""
+    while [ "$i" -le "$total_pages" ]; do
+        pathargs="$pathargs -f $explodeddir/$i\_$pdf"
+        i=$(( $i + 1 ))
+    done
+    cmd="pdfsam-console -o $output_pdf $pathargs concat > /dev/null"
+    eval $cmd
+fi
 
 echo 'removing temporary files+dir ...'
 rm $explodeddir/*
 rmdir $explodeddir
+
+exit 0
