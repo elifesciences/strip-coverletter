@@ -28,9 +28,10 @@ if [[ ! $1 ]] || [[ ! -f $1 ]]; then
 fi
 
 pdf=$(basename $1);
-explodeddir=/temp/$pdf-exploded # note! /temp and not /tmp 
+tempdir=/temp
+explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
 total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]{1,2}'`"
-output_pdf="/tmp/ncl-$pdf"
+output_pdf="$tempdir/ncl-$pdf"
 mkdir $explodeddir
 
 echo 'exploding pdf into individual files'
