@@ -28,24 +28,23 @@ if [[ ! $1 ]] || [[ ! -f $1 ]]; then
 fi
 
 pdf=$(basename $1);
-explodeddir=/tmp/$pdf-exploded
+explodeddir=/temp/$pdf-exploded # note! /temp and not /tmp 
 total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]{1,2}'`"
 output_pdf="/tmp/ncl-$pdf"
 mkdir $explodeddir
 
 echo 'exploding pdf into individual files'
-pdfsam-console -f $1 -o $explodeddir -S BURST -overwrite split > /dev/null
+pdfsam-console -f $1 -o $explodeddir -S BURST -overwrite split > $explodeddir/log
 
 echo 'looking for non-cover pages...'
 ncp=-1 # non-cover page
 cd $explodeddir
 for i in {2..7}; do # first page is guaranteed to be part of the cover letter...
     echo converting page ${i} to text...
-    pdftotext $explodeddir/$i\_$pdf $explodeddir/tmp.txt
     for j in {1..9}; do
         #match="`cat $explodeddir/tmp.txt | grep "^$j$" | head -n 1`"
         # this has a *slightly* more flexible regex
-        match="`cat $explodeddir/tmp.txt | grep "^$j.$" | head -n 1`"
+        match="`pdftotext $explodeddir/$i\_$pdf /dev/stdout | grep -Ex "^1.{0,1}$" | head -n 1`"
         if [ "$match" = "" ]; then
             echo page ${i} is a cover letter, skipping.
             break
