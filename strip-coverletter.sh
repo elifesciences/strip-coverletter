@@ -22,8 +22,8 @@ if [ ! -f /usr/bin/pdfsam-console ]; then
     exit 1;
 fi
 
-if [[ ! $1 ]] || [[ ! -f $1 ]]; then
-    echo "Usage: ./strip-coverletter.sh <pdf>"
+if [[ ! $1 ]] || [[ ! -f $1 ]] || [[ ! $2 ]]; then
+    echo "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf>"
     exit 1;
 fi
 
@@ -31,7 +31,10 @@ pdf=$(basename $1);
 tempdir=/temp
 explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
 total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]{1,2}'`"
-output_pdf="$tempdir/ncl-$pdf"
+#output_pdf="$tempdir/ncl-$pdf"
+output_pdf=`realpath $2`
+
+echo "exploding to:" $explodeddir
 mkdir $explodeddir
 
 echo 'exploding pdf into individual files'
