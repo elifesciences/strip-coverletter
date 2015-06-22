@@ -32,7 +32,7 @@ fi
 pdf=$(basename $1);
 tempdir=/tmp
 explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
-total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]{1,2}'`"
+total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]+'`"
 output_pdf=$(readlink -f "$2")
 
 echo "exploding to:" $explodeddir
@@ -72,6 +72,7 @@ else
     echo "writing pdf to $output_pdf ... "
     i=$ncp
     pathargs=""
+    #echo "endofcoverletter='$i' totalpages='$total_pages'"
     while [ "$i" -le "$total_pages" ]; do
         pathargs="$pathargs -f $explodeddir/$i\_$pdf"
         i=$(( $i + 1 ))
