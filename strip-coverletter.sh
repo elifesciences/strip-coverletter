@@ -67,22 +67,23 @@ done
 if [ ! "$ncp" -gt -1 ]; then
     errcho "failed to detect end of cover letter!"
     exit 1
-else
 
-    echo "writing pdf to $output_pdf ... "
-    i=$ncp
-    pathargs=""
-    #echo "endofcoverletter='$i' totalpages='$total_pages'"
-    while [ "$i" -le "$total_pages" ]; do
-        pathargs="$pathargs -f $explodeddir/$i\_$pdf"
-        i=$(( $i + 1 ))
-    done
-    cmd="pdfsam-console -overwrite -o $output_pdf $pathargs concat > /dev/null"
-    eval $cmd
-fi
+echo "writing pdf to $output_pdf ... "
+i=$ncp
+pathargs=""
+#echo "endofcoverletter='$i' totalpages='$total_pages'"
+while [ "$i" -le "$total_pages" ]; do
+    pathargs="$pathargs -f $explodeddir/$i\_$pdf"
+    i=$(( $i + 1 ))
+done
+
+cmd="pdfsam-console -overwrite -o $output_pdf $pathargs concat > /dev/null"
+eval $cmd
+
+echo 'squashing pdf ...'
+
+./downsample.pdf $output_pdf "ds-$output_pdf"
 
 echo 'removing temporary files+dir ...'
 rm $explodeddir/*
 rmdir $explodeddir
-
-exit 0
