@@ -2,12 +2,13 @@
 set -e
 
 infile=$1
+outfile=$2
 
 imageres=320
 threshold=10
 
 gs \
-   -o downsampled.pdf \
+   -o $outfile \
    -sDEVICE=pdfwrite \
    -dDownsampleColorImages=true \
    -dDownsampleGrayImages=true \
