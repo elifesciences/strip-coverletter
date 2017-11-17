@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 description="script that detects and removes the leading cover sheet from the 
              special article PDF sent to peer reviewers"
 
@@ -16,7 +18,7 @@ if [ ! -f /usr/bin/pdftotext ]; then
     exit 1
 fi
 
-if [ ! -f /usr/bin/pdfsam-console ]; then
+if ! type -P pdfsam-console; then
     errcho "'pdfsam-console' not found."
     errcho "For Ubuntu, follow installation directions:"
     errcho "   http://www.sysads.co.uk/2014/08/install-pdfsam-2-2-4-on-ubuntu-14-04/"
@@ -39,7 +41,7 @@ echo "exploding to:" $explodeddir
 mkdir -p $explodeddir
 
 echo 'exploding pdf to individual files...'
-pdfsam-console -f $1 -o $explodeddir -S BURST -overwrite split > $explodeddir/log
+pdfsam-console simplesplit --files $1 --output $explodeddir --existingOutput overwrite --predefinedPages all > $explodeddir/log
 
 echo 'looking for non-cover pages...'
 ncp=-1 # non-cover page
@@ -67,6 +69,7 @@ done
 if [ ! "$ncp" -gt -1 ]; then
     errcho "failed to detect end of cover letter!"
     exit 1
+fi
 
 echo "writing pdf to $output_pdf ... "
 i=$ncp
@@ -76,8 +79,7 @@ while [ "$i" -le "$total_pages" ]; do
     pathargs="$pathargs -f $explodeddir/$i\_$pdf"
     i=$(( $i + 1 ))
 done
-
-cmd="pdfsam-console -overwrite -o $output_pdf $pathargs concat > /dev/null"
+cmd="pdfsam-console merge --files $pathargs --output $output_pdf --overwrite > /dev/null"
 eval $cmd
 
 echo 'squashing pdf ...'
