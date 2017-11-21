@@ -2,6 +2,9 @@
 
 set -e
 
+# always start in the script's dir
+cd "$(dirname "$0")"
+
 description="script that detects and removes the leading cover sheet from the 
              special article PDF sent to peer reviewers"
 
@@ -18,8 +21,8 @@ if [ ! -f /usr/bin/pdftotext ]; then
     exit 1
 fi
 
-if ! type -P pdfsam-console; then
-    errcho "'pdfsam-console' not found."
+if ! type -P sejda-console; then
+    errcho "'sejda-console' not found."
     errcho "For Ubuntu, follow installation directions:"
     errcho "   http://www.sysads.co.uk/2014/08/install-pdfsam-2-2-4-on-ubuntu-14-04/"
     errcho "For Arch, install 'pdfsam'"
@@ -41,7 +44,7 @@ echo "exploding to:" $explodeddir
 mkdir -p $explodeddir
 
 echo 'exploding pdf to individual files...'
-pdfsam-console simplesplit --files $1 --output $explodeddir --existingOutput overwrite --predefinedPages all > $explodeddir/log
+sejda-console simplesplit --files $1 --output $explodeddir --existingOutput overwrite --predefinedPages all > $explodeddir/log
 
 echo 'looking for non-cover pages...'
 ncp=-1 # non-cover page
@@ -79,7 +82,7 @@ while [ "$i" -le "$total_pages" ]; do
     pathargs="$pathargs -f $explodeddir/$i\_$pdf"
     i=$(( $i + 1 ))
 done
-cmd="pdfsam-console merge --files $pathargs --output $output_pdf --overwrite > /dev/null"
+cmd="sejda-console merge --files $pathargs --output $output_pdf --overwrite > /dev/null"
 eval $cmd
 
 echo 'squashing pdf ...'
