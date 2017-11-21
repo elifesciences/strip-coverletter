@@ -40,11 +40,14 @@ fi
 pdf=$(basename $1);
 tempdir=/tmp
 explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
-total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]+'`"
-output_pdf=$(readlink -f "$2")
 
 echo "exploding to $explodeddir"
 mkdir -p $explodeddir
+touch $explodeddir/log
+
+total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]+'`"
+output_pdf=$(readlink -f "$2")
+
 sejda-console simplesplit --files $1 --output $explodeddir --existingOutput overwrite --predefinedPages all > $explodeddir/log
 
 echo 'looking for non-cover pages...'
