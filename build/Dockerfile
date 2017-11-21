@@ -19,4 +19,4 @@ RUN wget --quiet https://github.com/torakiki/sejda/releases/download/v3.2.38/sej
 RUN unzip -q sejda-console-3.2.38-bin.zip && ln -s sejda-console-3.2.38 sejda
 ENV PATH="/opt/strip-coverletter:/opt/strip-coverletter/sejda/bin:${PATH}"
 
-RUN git pull && git checkout 0e58db44f66e6bc5e2b526cfc67c18996f97ae89
+RUN git pull && git checkout --quiet a514bd43512b1a133668008cb8e698b0e408a18e
