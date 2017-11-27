@@ -96,6 +96,25 @@ squashed_pdf="$output_pdf-squashed.pdf"
 ./downsample.sh $output_pdf $squashed_pdf >> $explodeddir/log 2>&1
 echo "- wrote $squashed_pdf"
 
+echo "thinking ..."
+
+decap_bytes=$(du --bytes $output_pdf | cut --fields 1)
+squashed_bytes=$(du --bytes $squashed_pdf | cut --fields 1)
+savings_bytes=$((decap_bytes-squashed_bytes))
+
+echo "- decapped: $decap_bytes"
+echo "- squashed: $squashed_bytes"
+echo "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
+
+# only use the squashed pdf if it's smaller than the decapped version
+if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
+    echo "- preferring squashed"
+    mv $squashed_pdf $output_pdf
+else
+    echo "- preferring decapped"
+    rm "$squashed_pdf"
+fi
+
 echo 'removing temporary files+dir ...'
 rm $explodeddir/*
 rmdir $explodeddir
