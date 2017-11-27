@@ -55,8 +55,9 @@ ncp=-1 # non-cover page
 for i in {2..7}; do # first page is guaranteed to be part of the cover letter...
     echo "- converting page $i to text..."
     for j in {1..9}; do
-        #match="`cat $explodeddir/tmp.txt | grep "^$j$" | head -n 1`"
-        # this has a *slightly* more flexible regex
+        # looks for lines starting with '1' followed by 0 or 1 chars and then ends
+        # examples with more whitespace then ends:
+        # bucket-pdf/6117_1_merged_pdf_82383_nd6nzc.pdf
         match="`pdftotext $explodeddir/$i\_$pdf /dev/stdout | grep -Ex "^1.{0,1}$" | head -n 1`"
         if [ "$match" = "" ]; then
             echo "- page $i is a cover letter"
@@ -74,6 +75,14 @@ done
 
 if [ ! "$ncp" -gt -1 ]; then
     errcho "failed to detect end of cover letter!"
+    # if pdftotext can't find any text, for example if text has been converted 
+    # to paths, then we'll get here and exit.
+
+    # TODO: investigate possibility of splitting by bookmarks
+    # some but not all of these files have bookmarks like 'Cover Page', 'Article File'
+    # this command on this file creates two files, the first is the covering letter, the second the article
+    # sejda-console splitbybookmarks -f bucket-pdf/7142_1_merged_pdf_101005_nhp9w3.pdf -l 1 -o tmp/ -e "Article File"
+
     exit 1
 fi
 
