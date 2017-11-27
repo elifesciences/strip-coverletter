@@ -32,9 +32,10 @@ for pdffile in `ls $pdfdir/*.pdf`; do
         continue
     fi
     if ! ./strip-coverletter.sh $in $out; then
-        echo "====================="
+        echo "===================== errstart"
         echo "FAILURE with: ./strip-coverletter.sh $in $out"
         cat /tmp/$fname-exploded/log
-        echo "====================="
+        echo "===================== errend"
     fi
+    echo
 done
