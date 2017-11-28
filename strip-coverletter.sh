@@ -34,6 +34,7 @@ fi
 
 if [[ ! $1 ]] || [[ ! -f $1 ]] || [[ ! $2 ]]; then
     errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf>"
+    errcho "Input: ./strip-coverletter.sh $1 $2"
     exit 1;
 fi
 

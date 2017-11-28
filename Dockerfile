@@ -11,7 +11,7 @@ RUN apt-get install openjdk-8-jre-headless wget git unzip xpdf-utils -y --no-ins
 # apt-get install ttf-mscorefonts-installer
 
 # clone project
-RUN cd /opt && git clone https://github.com/elifesciences/strip-coverletter/
+COPY *.sh *.py /opt/strip-coverletter/
 WORKDIR /opt/strip-coverletter
 
 # install cajda
@@ -19,4 +19,5 @@ RUN wget --quiet https://github.com/torakiki/sejda/releases/download/v3.2.38/sej
 RUN unzip -q sejda-console-3.2.38-bin.zip && ln -s sejda-console-3.2.38 sejda
 ENV PATH="/opt/strip-coverletter:/opt/strip-coverletter/sejda/bin:${PATH}"
 
-RUN git pull && git checkout --quiet a514bd43512b1a133668008cb8e698b0e408a18e
+ENTRYPOINT ["/opt/strip-coverletter/strip-coverletter.sh"]
+CMD []
