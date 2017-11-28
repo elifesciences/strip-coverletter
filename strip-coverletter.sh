@@ -94,7 +94,7 @@ if [ ! "$ncp" -gt -1 ]; then
     # this command on this file creates two files, the first is the covering letter, the second the article
     # sejda-console splitbybookmarks -f bucket-pdf/7142_1_merged_pdf_101005_nhp9w3.pdf -l 1 -o tmp/ -e "Article File"
 
-    exit 1
+    exit 2
 fi
 
 echo "writing pdf ..."
