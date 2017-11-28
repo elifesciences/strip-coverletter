@@ -4,7 +4,7 @@
 
 # short
 
-#set -e
+set -e
 #set -xv
 
 function testdecap {
@@ -12,9 +12,11 @@ function testdecap {
     pdf_dir="tests/$2"
     
     for pdffile in `ls $pdf_dir/*.pdf`; do
+        set +e
         echo "testing $pdffile"
         ./strip-coverletter.sh $pdffile tmp.pdf &> /dev/null
         rc=$?
+        set -e
         if [ $rc -ne $expected_rc ]; then
             echo "got return code '$rc', expected $expected_rc for fixture $pdffile"
         fi
