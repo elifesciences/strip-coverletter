@@ -25,11 +25,9 @@ if [ ! -f /usr/bin/pdftotext ]; then
 fi
 
 if ! type -P sejda-console > /dev/null; then
-    errcho "'sejda-console' not found."
-    errcho "For Ubuntu, follow installation directions:"
-    errcho "   http://www.sysads.co.uk/2014/08/install-pdfsam-2-2-4-on-ubuntu-14-04/"
-    errcho "For Arch, install 'pdfsam'"
-    exit 1;
+    errcho "installing sejda-console (locally) ... "
+    ./download-sejda.sh
+    errcho "- sejda installed to ./sejda-console"
 fi
 
 if [[ ! $1 ]] || [[ ! -f $1 ]] || [[ ! $2 ]]; then
@@ -42,7 +40,7 @@ pdf=$(basename $1);
 tempdir=/tmp
 explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
 
-echo "exploding to $explodeddir"
+echo "exploding pdf to $explodeddir"
 mkdir -p $explodeddir
 touch $explodeddir/log
 
