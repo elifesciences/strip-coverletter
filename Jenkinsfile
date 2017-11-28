@@ -4,7 +4,7 @@ elifeLibrary {
     }
 
     stage 'Build image', {
-        sh './build_image.sh'
+        sh './build-image.sh'
     }
 
     stage 'Run tests', {
