@@ -1,0 +1,6 @@
+bucket/
+bucket-pdf/
+bucket-pdf-decap/
+*.pdf
+*.zip
+fixtures/
