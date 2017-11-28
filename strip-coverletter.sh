@@ -46,6 +46,18 @@ echo "exploding to $explodeddir"
 mkdir -p $explodeddir
 touch $explodeddir/log
 
+# called when this script is done
+# if an error log can be found, it displays it
+function finish {
+    if [ -e $explodeddir/log ]; then
+        echo "----FAILURE----"
+        cat $explodeddir/log
+        echo "---/FAILURE----"
+    fi
+    exit $1
+}
+trap finish EXIT
+
 total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]+'`"
 output_pdf=$(readlink -f "$2")
 
