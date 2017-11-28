@@ -1,9 +1,6 @@
 #!/bin/bash
-# iterate through contents of zipped files in $bucket
-# extract contents, run strip-coverletter, delete contents
-
+# iterate through contents of zipped files in $bucket and extract merged file
 set -e
-#set -vx
 
 bucketdir=${1:-bucket}
 pdfdir="$bucketdir-pdf"
