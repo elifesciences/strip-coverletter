@@ -1,5 +1,13 @@
 #!/bin/bash
 
+set -e
+
+# always start in the script's dir
+cd "$(dirname "$0")"
+
+# use the local sejda-console rather than rely on one being installed
+PATH="sejda-console/bin:$PATH" 
+
 description="script that detects and removes the leading cover sheet from the 
              special article PDF sent to peer reviewers"
 
@@ -16,42 +24,54 @@ if [ ! -f /usr/bin/pdftotext ]; then
     exit 1
 fi
 
-if [ ! -f /usr/bin/pdfsam-console ]; then
-    errcho "'pdfsam-console' not found."
-    errcho "For Ubuntu, follow installation directions:"
-    errcho "   http://www.sysads.co.uk/2014/08/install-pdfsam-2-2-4-on-ubuntu-14-04/"
-    errcho "For Arch, install 'pdfsam'"
-    exit 1;
+if ! type -P sejda-console > /dev/null; then
+    errcho "installing sejda-console (locally) ... "
+    ./download-sejda.sh
+    errcho "- sejda installed to ./sejda-console"
 fi
 
 if [[ ! $1 ]] || [[ ! -f $1 ]] || [[ ! $2 ]]; then
     errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf>"
+    errcho "Input: ./strip-coverletter.sh $1 $2"
     exit 1;
 fi
 
 pdf=$(basename $1);
 tempdir=/tmp
 explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
+
+echo "exploding pdf to $explodeddir"
+mkdir -p $explodeddir
+touch $explodeddir/log
+
+# called when this script is done
+# if an error log can be found, it displays it
+function finish {
+    if [ -e $explodeddir/log ]; then
+        echo "----FAILURE----"
+        cat $explodeddir/log
+        echo "---/FAILURE----"
+    fi
+    exit $1
+}
+trap finish EXIT
+
 total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]+'`"
 output_pdf=$(readlink -f "$2")
 
-echo "exploding to:" $explodeddir
-mkdir -p $explodeddir
-
-echo 'exploding pdf to individual files...'
-pdfsam-console -f $1 -o $explodeddir -S BURST -overwrite split > $explodeddir/log
+sejda-console simplesplit --files $1 --output $explodeddir --existingOutput overwrite --predefinedPages all > $explodeddir/log
 
 echo 'looking for non-cover pages...'
 ncp=-1 # non-cover page
-cd $explodeddir
 for i in {2..7}; do # first page is guaranteed to be part of the cover letter...
-    echo converting page ${i} to text...
+    echo "- converting page $i to text..."
     for j in {1..9}; do
-        #match="`cat $explodeddir/tmp.txt | grep "^$j$" | head -n 1`"
-        # this has a *slightly* more flexible regex
+        # looks for lines starting with '1' followed by 0 or 1 chars and then ends
+        # examples with more whitespace then ends:
+        # bucket-pdf/6117_1_merged_pdf_82383_nd6nzc.pdf
         match="`pdftotext $explodeddir/$i\_$pdf /dev/stdout | grep -Ex "^1.{0,1}$" | head -n 1`"
         if [ "$match" = "" ]; then
-            echo page ${i} is a cover letter, skipping.
+            echo "- page $i is a cover letter"
             break
         else
             #echo "match found for line starting with '$j'"
@@ -59,30 +79,63 @@ for i in {2..7}; do # first page is guaranteed to be part of the cover letter...
         fi
     done
     if [ "$ncp" -gt -1 ]; then
-        echo "article begins at page $ncp"
+        echo "- article begins at page $ncp!"
         break
     fi
 done
 
 if [ ! "$ncp" -gt -1 ]; then
     errcho "failed to detect end of cover letter!"
-    exit 1
-else
+    # if pdftotext can't find any text, for example if text has been converted 
+    # to paths, then we'll get here and exit.
 
-    echo "writing pdf to $output_pdf ... "
-    i=$ncp
-    pathargs=""
-    #echo "endofcoverletter='$i' totalpages='$total_pages'"
-    while [ "$i" -le "$total_pages" ]; do
-        pathargs="$pathargs -f $explodeddir/$i\_$pdf"
-        i=$(( $i + 1 ))
-    done
-    cmd="pdfsam-console -overwrite -o $output_pdf $pathargs concat > /dev/null"
-    eval $cmd
+    # TODO: investigate possibility of splitting by bookmarks
+    # some but not all of these files have bookmarks like 'Cover Page', 'Article File'
+    # this command on this file creates two files, the first is the covering letter, the second the article
+    # sejda-console splitbybookmarks -f bucket-pdf/7142_1_merged_pdf_101005_nhp9w3.pdf -l 1 -o tmp/ -e "Article File"
+
+    exit 2
+fi
+
+echo "writing pdf ..."
+i=$ncp
+pathargs=""
+#echo "endofcoverletter='$i' totalpages='$total_pages'"
+while [ "$i" -le "$total_pages" ]; do
+    pathargs="$pathargs $explodeddir/$i\_$pdf"
+    i=$(( $i + 1 ))
+done
+
+cmd="sejda-console merge --files $pathargs --output $output_pdf --overwrite >> $explodeddir/log 2>&1"
+eval $cmd
+echo "- wrote $output_pdf"
+
+echo 'squashing pdf ...'
+
+squashed_pdf="$output_pdf-squashed.pdf"
+./downsample.sh $output_pdf $squashed_pdf >> $explodeddir/log 2>&1
+echo "- wrote $squashed_pdf"
+
+echo "thinking ..."
+
+decap_bytes=$(du --bytes $output_pdf | cut --fields 1)
+squashed_bytes=$(du --bytes $squashed_pdf | cut --fields 1)
+savings_bytes=$((decap_bytes-squashed_bytes))
+
+echo "- decapped: $decap_bytes"
+echo "- squashed: $squashed_bytes"
+echo "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
+
+# only use the squashed pdf if it's smaller than the decapped version
+if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
+    echo "- preferring squashed"
+    mv $squashed_pdf $output_pdf
+else
+    echo "- preferring decapped"
+    rm "$squashed_pdf"
 fi
 
 echo 'removing temporary files+dir ...'
 rm $explodeddir/*
 rmdir $explodeddir
-
-exit 0
+echo "- all done  •ᴗ•"
