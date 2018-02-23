@@ -127,14 +127,13 @@ echo "- squashed: $squashed_bytes"
 echo "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
 
 # only use the squashed pdf if it's smaller than the decapped version
-# NOTE: disabled 2018-02-23, squashing may be introducing weird problems on 14.04
-#if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
-#    echo "- preferring squashed"
-#    mv $squashed_pdf $output_pdf
-#else
+if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
+    echo "- preferring squashed"
+    mv $squashed_pdf $output_pdf
+else
     echo "- preferring decapped"
     rm "$squashed_pdf"
-#fi
+fi
 
 echo 'removing temporary files+dir ...'
 rm $explodeddir/*
