@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:xenial
 
 MAINTAINER Luke Skibinski <l.skibinski@elifesciences.org>
 
