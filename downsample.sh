@@ -19,4 +19,5 @@ gs \
    -dColorImageDownsampleThreshold=$threshold \
    -dGrayImageDownsampleThreshold=$threshold \
    -dMonoImageDownsampleThreshold=$threshold \
+   -dAutoRotatePages=/None \
    $infile
