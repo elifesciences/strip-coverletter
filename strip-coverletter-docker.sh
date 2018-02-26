@@ -8,7 +8,6 @@ out=$2
 bname_out=${out##*/}
 
 mkdir -p vol
-cp $in vol/$bname_in
 
 docker run \
     --volume $(pwd):/data \
