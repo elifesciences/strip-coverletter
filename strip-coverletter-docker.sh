@@ -10,7 +10,7 @@ bname_out=${out##*/}
 mkdir -p vol
 cp $in vol/$bname_in
 
-sudo docker run \
+docker run \
     --volume $(pwd):/data \
     --volume $in:/data/$bname_in \
     --user $(id -u $(whoami)) \
