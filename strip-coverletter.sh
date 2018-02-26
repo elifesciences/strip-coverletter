@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# everything must succeed
 set -e
 
 # always start in the script's dir
@@ -37,8 +38,8 @@ if [[ ! $1 ]] || [[ ! -f $1 ]] || [[ ! $2 ]]; then
 fi
 
 pdf=$(basename $1);
-tempdir=/tmp
-explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
+tempdir=/tmp # TODO: make this a third optional parameter to script
+explodeddir=$tempdir/$pdf-exploded
 
 echo "exploding pdf to $explodeddir"
 mkdir -p $explodeddir
@@ -136,6 +137,7 @@ else
 fi
 
 echo 'removing temporary files+dir ...'
-rm $explodeddir/*
-rmdir $explodeddir
+# removes log file. if log file detected in FINISH handler (above), it assumes script failed
+rm "$explodeddir/*"
+rmdir "$explodeddir"
 echo "- all done  •ᴗ•"
