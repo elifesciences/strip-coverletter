@@ -12,11 +12,9 @@ cp $in vol/$bname_in
 
 sudo docker run \
     --volume $(pwd):/data \
+    --volume $in:/data/$bname_in \
     --user $(id -u $(whoami)) \
-    strip-coverletter /data/vol/$bname_in /data/vol/$bname_out
-
-# clean up
-rm vol/$bname_in
+    strip-coverletter /data/$bname_in /data/vol/$bname_out
 
 # move final file to original destination    
 mv vol/$bname_out $out
