@@ -1,4 +1,10 @@
 #!/bin/bash
+# script that detects and removes the leading cover sheet from the 
+# special article PDF sent to peer reviewers"
+#
+# author: Luke Skibinski <l.skibinski@elifesciences.org>
+# copyright: eLife Sciences
+# license: GNU GPLv3
 
 set -e
 
@@ -6,14 +12,7 @@ set -e
 cd "$(dirname "$0")"
 
 # use the local sejda-console rather than rely on one being installed
-PATH="sejda-console/bin:$PATH" 
-
-description="script that detects and removes the leading cover sheet from the 
-             special article PDF sent to peer reviewers"
-
-author="Luke Skibinski <l.skibinski@elifesciences.org>"
-copyright="eLife Sciences"
-license="GNU GPLv3"
+PATH="sejda-console/bin:$PATH"
 
 errcho() { echo "$@" 1>&2; } # for errors
 
@@ -36,30 +35,30 @@ if [[ ! $1 ]] || [[ ! -f $1 ]] || [[ ! $2 ]]; then
     exit 1;
 fi
 
-pdf=$(basename $1);
+pdf=$(basename "$1");
 tempdir=/tmp
 explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
 
 echo "exploding pdf to $explodeddir"
-mkdir -p $explodeddir
-touch $explodeddir/log
+mkdir -p "$explodeddir"
+touch "$explodeddir/log"
 
 # called when this script is done
 # if an error log can be found, it displays it
 function finish {
-    if [ -e $explodeddir/log ]; then
+    if [ -e "$explodeddir/log" ]; then
         echo "----FAILURE----"
-        cat $explodeddir/log
+        cat "$explodeddir/log"
         echo "---/FAILURE----"
     fi
-    exit $1
+    exit "$1"
 }
 trap finish EXIT
 
-total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]+'`"
+total_pages=$(pdfinfo "$1" | grep 'Pages:' | grep -Eo '[0-9]+')
 output_pdf=$(readlink -f "$2")
 
-sejda-console simplesplit --files $1 --output $explodeddir --existingOutput overwrite --predefinedPages all > $explodeddir/log
+sejda-console simplesplit --files "$1" --output "$explodeddir" --existingOutput overwrite --predefinedPages all > "$explodeddir/log"
 
 echo 'looking for non-cover pages...'
 ncp=-1 # non-cover page
@@ -69,7 +68,7 @@ for i in {2..7}; do # first page is guaranteed to be part of the cover letter...
         # looks for lines starting with '1' followed by 0 or 1 chars and then ends
         # examples with more whitespace then ends:
         # bucket-pdf/6117_1_merged_pdf_82383_nd6nzc.pdf
-        match="`pdftotext $explodeddir/$i\_$pdf /dev/stdout | grep -Ex "^1.{0,1}$" | head -n 1`"
+        match=$(pdftotext "$explodeddir/$i\\_$pdf" /dev/stdout | grep -Ex "^1.{0,1}$" | head -n 1)
         if [ "$match" = "" ]; then
             echo "- page $i is a cover letter"
             break
@@ -102,29 +101,29 @@ i=$ncp
 pathargs=""
 #echo "endofcoverletter='$i' totalpages='$total_pages'"
 while [ "$i" -le "$total_pages" ]; do
-    pathargs="$pathargs $explodeddir/$i\_$pdf"
-    i=$(( $i + 1 ))
+    pathargs="$pathargs $explodeddir/$i\\_$pdf"
+    i=$(( i + 1 ))
 done
 
 cmd="sejda-console merge --files $pathargs --output $output_pdf --overwrite >> $explodeddir/log 2>&1"
-eval $cmd
+eval "$cmd"
 echo "- wrote $output_pdf"
 
 echo 'squashing pdf ...'
 
 squashed_pdf="$output_pdf-squashed.pdf"
-./downsample.sh $output_pdf $squashed_pdf >> $explodeddir/log 2>&1
+./downsample.sh "$output_pdf" "$squashed_pdf" >> "$explodeddir/log" 2>&1
 echo "- wrote $squashed_pdf"
 
 echo "thinking ..."
 
-decap_bytes=$(du --bytes $output_pdf | cut --fields 1)
-squashed_bytes=$(du --bytes $squashed_pdf | cut --fields 1)
+decap_bytes=$(du --bytes "$output_pdf" | cut --fields 1)
+squashed_bytes=$(du --bytes "$squashed_pdf" | cut --fields 1)
 savings_bytes=$((decap_bytes-squashed_bytes))
 
 echo "- decapped: $decap_bytes"
 echo "- squashed: $squashed_bytes"
-echo "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
+echo "- savings:  $savings_bytes ($(((savings_bytes/1024)/1024))MB)"
 
 # only use the squashed pdf if it's smaller than the decapped version
 # NOTE: disabled 2018-02-23, squashing may be introducing weird problems on 14.04
@@ -137,6 +136,6 @@ echo "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
 #fi
 
 echo 'removing temporary files+dir ...'
-rm $explodeddir/*
-rmdir $explodeddir
+rm "$explodeddir/*"
+rmdir "$explodeddir"
 echo "- all done  •ᴗ•"

@@ -1,3 +1,4 @@
 #!/bin/bash
-set -e
-sudo docker run -v $(pwd):/data -u $(id -u $(whoami)) strip-coverletter /data/dummy.pdf /data/out.pdf
+set -exv
+userid="$(id -u "$(whoami)")"
+sudo docker run -v "$(pwd)":/data -u "$userid" strip-coverletter /data/dummy.pdf /data/out.pdf

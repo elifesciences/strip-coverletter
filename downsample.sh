@@ -8,7 +8,7 @@ imageres=320
 threshold=10
 
 gs \
-   -o $outfile \
+   -o "$outfile" \
    -sDEVICE=pdfwrite \
    -dDownsampleColorImages=true \
    -dDownsampleGrayImages=true \
@@ -19,4 +19,4 @@ gs \
    -dColorImageDownsampleThreshold=$threshold \
    -dGrayImageDownsampleThreshold=$threshold \
    -dMonoImageDownsampleThreshold=$threshold \
-   $infile
+   "$infile"
