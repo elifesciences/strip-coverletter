@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# everything must succeed
 set -e
 
 # always start in the script's dir
@@ -37,8 +38,8 @@ if [[ ! $1 ]] || [[ ! -f $1 ]] || [[ ! $2 ]]; then
 fi
 
 pdf=$(basename $1);
-tempdir=/tmp
-explodeddir=$tempdir/$pdf-exploded # note! /temp and not /tmp 
+tempdir=/tmp # TODO: make this a third optional parameter to script
+explodeddir=$tempdir/$pdf-exploded
 
 echo "exploding pdf to $explodeddir"
 mkdir -p $explodeddir
@@ -127,16 +128,16 @@ echo "- squashed: $squashed_bytes"
 echo "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
 
 # only use the squashed pdf if it's smaller than the decapped version
-# NOTE: disabled 2018-02-23, squashing may be introducing weird problems on 14.04
-#if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
-#    echo "- preferring squashed"
-#    mv $squashed_pdf $output_pdf
-#else
+if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
+    echo "- preferring squashed"
+    mv $squashed_pdf $output_pdf
+else
     echo "- preferring decapped"
     rm "$squashed_pdf"
-#fi
+fi
 
 echo 'removing temporary files+dir ...'
+# removes log file. if log file detected in FINISH handler (above), it assumes script failed
 rm $explodeddir/*
-rmdir $explodeddir
+rmdir "$explodeddir"
 echo "- all done  •ᴗ•"
