@@ -138,6 +138,6 @@ fi
 
 echo 'removing temporary files+dir ...'
 # removes log file. if log file detected in FINISH handler (above), it assumes script failed
-rm "$explodeddir/*"
+rm $explodeddir/*
 rmdir "$explodeddir"
 echo "- all done  •ᴗ•"
