@@ -19,22 +19,22 @@ if [ -z "$pdfdir" ]; then
 fi
 
 outdir="$pdfdir-decap"
-mkdir -p $outdir
+mkdir -p "$outdir"
 
 #
 
-for pdffile in `ls $pdfdir/*.pdf`; do
+for pdffile in $pdfdir/*.pdf; do
     fname=${pdffile##*/}
     in=$pdffile
     out="$outdir/$fname"
-    if [ -e $out ]; then
+    if [ -e "$out" ]; then
         echo "found $out, skipping"
         continue
     fi
-    if ! ./strip-coverletter.sh $in $out; then
+    if ! ./strip-coverletter.sh "$in" "$out"; then
         echo "===================== errstart"
         echo "FAILURE with: ./strip-coverletter.sh $in $out"
-        cat /tmp/$fname-exploded/log
+        cat "/tmp/$fname-exploded/log"
         echo "===================== errend"
     fi
     echo

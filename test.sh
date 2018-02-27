@@ -11,13 +11,13 @@ function testdecap {
     expected_rc=$1
     pdf_dir="tests/$2"
     
-    for pdffile in `ls $pdf_dir/*.pdf`; do
+    for pdffile in $pdf_dir/*.pdf; do
         set +e
         echo "testing $pdffile"
-        ./strip-coverletter.sh $pdffile tmp.pdf &> /dev/null
+        ./strip-coverletter.sh "$pdffile" tmp.pdf &> /dev/null
         rc=$?
         set -e
-        if [ $rc -ne $expected_rc ]; then
+        if [ $rc -ne "$expected_rc" ]; then
             echo "got return code '$rc', expected $expected_rc for fixture $pdffile"
         fi
         rm -f tmp.pdf
