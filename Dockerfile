@@ -12,6 +12,13 @@ RUN apt-get install ghostscript openjdk-8-jre-headless wget git unzip xpdf-utils
 
 WORKDIR /opt/strip-coverletter
 
+# create a worker to run the script as
+RUN useradd worker --uid 1000 --shell /bin/bash --no-create-home
+RUN chown worker .
+
+# drop privileges
+USER worker
+
 # install sejda
 RUN wget --quiet https://github.com/torakiki/sejda/releases/download/v3.2.38/sejda-console-3.2.38-bin.zip
 RUN unzip -q sejda-console-3.2.38-bin.zip && ln -s sejda-console-3.2.38 sejda

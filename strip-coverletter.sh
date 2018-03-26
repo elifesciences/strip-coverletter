@@ -16,7 +16,10 @@ author="Luke Skibinski <l.skibinski@elifesciences.org>"
 copyright="eLife Sciences"
 license="GNU GPLv3"
 
-errcho() { echo "$@" 1>&2; } # for errors
+errcho() { echo "$@" 1>&2; } # write to stderr
+
+infile=$1
+outfile=$2
 
 if [ ! -f /usr/bin/pdftotext ]; then
     errcho "'pdftotext' not found."
@@ -31,62 +34,78 @@ if ! type -P sejda-console > /dev/null; then
     errcho "- sejda installed to ./sejda-console"
 fi
 
-if [[ ! $1 ]] || [[ ! -f $1 ]] || [[ ! $2 ]]; then
+if [[ ! $infile ]] || [[ ! -f $infile ]] || [[ ! $outfile ]]; then
     errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf>"
-    errcho "Input: ./strip-coverletter.sh $1 $2"
+    errcho "Input: ./strip-coverletter.sh $infile $outfile"
     exit 1;
 fi
 
-pdf=$(basename $1);
+
+outdir=$(dirname $(readlink -m $outfile))
+
+pdf=$(basename $infile);
 tempdir=/tmp # TODO: make this a third optional parameter to script
 explodeddir=$tempdir/$pdf-exploded
 
-echo "exploding pdf to $explodeddir"
-mkdir -p $explodeddir
-touch $explodeddir/log
+mkdir -p $explodeddir $outdir # create output dir if it doesn't exist
+
+function log {
+    msg="$(date -u --rfc-3339='ns'): $1"
+    errcho $msg
+}
+
+log "exploding pdf to $explodeddir"
 
 # called when this script is done
-# if an error log can be found, it displays it
+# when last command fails a dump file is written using the given output filename
 function finish {
-    if [ -e $explodeddir/log ]; then
-        echo "----FAILURE----"
-        cat $explodeddir/log
-        echo "---/FAILURE----"
+    retcode=$?
+    if [[ $retcode > 0 ]]; then
+        # capture the input for debugging later
+        cp $infile "$explodeddir/$pdf.orig"
+
+        # move explodeddir out of temp for debugging
+        dumpfile="$outdir/$pdf.dump.tar"
+        tar -cf $dumpfile $explodeddir
+        errcho "wrote $dumpfile"
     fi
-    exit $1
+    #exit $1 # $1 wasn't always present, $? uses the return code of last run cmd
 }
 trap finish EXIT
 
-total_pages="`pdfinfo $1 | grep 'Pages:' | grep -Eo '[0-9]+'`"
-output_pdf=$(readlink -f "$2")
 
-sejda-console simplesplit --files $1 --output $explodeddir --existingOutput overwrite --predefinedPages all > $explodeddir/log
+log "calling pdfinfo, looking for page count ..."
+total_pages="`pdfinfo $infile | grep 'Pages:' | grep -Eo '[0-9]+'`"
+output_pdf=$(readlink -m "$outfile")
 
-echo 'looking for non-cover pages...'
+log "splitting pdf into component pages ..."
+sejda-console simplesplit --files $infile --output $explodeddir --existingOutput overwrite --predefinedPages all
+
+log 'looking for non-cover pages...'
 ncp=-1 # non-cover page
 for i in {2..7}; do # first page is guaranteed to be part of the cover letter...
-    echo "- converting page $i to text..."
+    log "- converting page $i to text..."
     for j in {1..9}; do
         # looks for lines starting with '1' followed by 0 or 1 chars and then ends
         # examples with more whitespace then ends:
         # bucket-pdf/6117_1_merged_pdf_82383_nd6nzc.pdf
         match="`pdftotext $explodeddir/$i\_$pdf /dev/stdout | grep -Ex "^1.{0,1}$" | head -n 1`"
         if [ "$match" = "" ]; then
-            echo "- page $i is a cover letter"
+            log "- page $i is a cover letter"
             break
         else
-            #echo "match found for line starting with '$j'"
+            #log "match found for line starting with '$j'"
             ncp=$i
         fi
     done
     if [ "$ncp" -gt -1 ]; then
-        echo "- article begins at page $ncp!"
+        log "- article begins at page $ncp!"
         break
     fi
 done
 
 if [ ! "$ncp" -gt -1 ]; then
-    errcho "failed to detect end of cover letter!"
+    log "failed to detect end of cover letter!"
     # if pdftotext can't find any text, for example if text has been converted 
     # to paths, then we'll get here and exit.
 
@@ -98,7 +117,7 @@ if [ ! "$ncp" -gt -1 ]; then
     exit 2
 fi
 
-echo "writing pdf ..."
+log "writing pdf ..."
 i=$ncp
 pathargs=""
 #echo "endofcoverletter='$i' totalpages='$total_pages'"
@@ -107,37 +126,37 @@ while [ "$i" -le "$total_pages" ]; do
     i=$(( $i + 1 ))
 done
 
-cmd="sejda-console merge --files $pathargs --output $output_pdf --overwrite >> $explodeddir/log 2>&1"
+cmd="sejda-console merge --files $pathargs --output $output_pdf --overwrite 2>&1"
 eval $cmd
-echo "- wrote $output_pdf"
+log "- wrote $output_pdf"
 
-echo 'squashing pdf ...'
+log 'squashing pdf ...'
 
 squashed_pdf="$output_pdf-squashed.pdf"
-./downsample.sh $output_pdf $squashed_pdf >> $explodeddir/log 2>&1
-echo "- wrote $squashed_pdf"
+./downsample.sh $output_pdf $squashed_pdf 2>&1
+log "- wrote $squashed_pdf"
 
-echo "thinking ..."
+log "thinking ..."
 
 decap_bytes=$(du --bytes $output_pdf | cut --fields 1)
 squashed_bytes=$(du --bytes $squashed_pdf | cut --fields 1)
 savings_bytes=$((decap_bytes-squashed_bytes))
 
-echo "- decapped: $decap_bytes"
-echo "- squashed: $squashed_bytes"
-echo "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
+log "- decapped: $decap_bytes"
+log "- squashed: $squashed_bytes"
+log "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
 
 # only use the squashed pdf if it's smaller than the decapped version
 if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
-    echo "- preferring squashed"
+    log "- preferring squashed"
     mv $squashed_pdf $output_pdf
 else
-    echo "- preferring decapped"
+    log "- preferring decapped"
     rm "$squashed_pdf"
 fi
 
-echo 'removing temporary files+dir ...'
+log 'removing temporary files+dir ...'
 # removes log file. if log file detected in FINISH handler (above), it assumes script failed
 rm $explodeddir/*
 rmdir "$explodeddir"
-echo "- all done  •ᴗ•"
+log "- all done  •ᴗ•"
