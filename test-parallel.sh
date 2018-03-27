@@ -8,7 +8,10 @@ rm -rf ptests/
 pollmem () {
     while true; do
         # memory available as a percentage
-        awk '/MemAvailable/{free=$2} /MemTotal/{total=$2} END{print (100 - (free*100)/total)}' /proc/meminfo
+        #awk '/MemAvailable/{free=$2} /MemTotal/{total=$2} END{print (100 - (free*100)/total)}' /proc/meminfo
+
+        # memory used as megabytes
+        awk '/MemAvailable/{free=$2} /MemTotal/{total=$2} END{print ((total - free)/1024) " MB used"}' /proc/meminfo
         sleep 1
     done
 }
