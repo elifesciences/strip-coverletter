@@ -16,14 +16,14 @@ WORKDIR /opt/strip-coverletter
 RUN useradd worker --uid 1000 --shell /bin/bash --no-create-home
 RUN chown worker .
 
-# drop privileges
-USER worker
-
 # install sejda
 RUN wget --quiet https://github.com/torakiki/sejda/releases/download/v3.2.38/sejda-console-3.2.38-bin.zip
 RUN unzip -q sejda-console-3.2.38-bin.zip && ln -s sejda-console-3.2.38 sejda
 ENV PATH="/opt/strip-coverletter:/opt/strip-coverletter/sejda/bin:${PATH}"
 
-COPY *.sh /opt/strip-coverletter/
+# drop privileges
+USER worker
+
+COPY --chown=1000 *.sh /opt/strip-coverletter/
 ENTRYPOINT ["/opt/strip-coverletter/strip-coverletter.sh"]
 CMD []
