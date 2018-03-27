@@ -11,7 +11,7 @@ bname_out=${out##*/}
 work_dir="/tmp/decap"
 logfile="$work_dir/$bname_in.log" # ll: /tmp/decap/baz.pdf.log
 
-mkdir -p vol $work_dir
+mkdir -p vol $work_dir $out_dir
 
 function finish {
     retcode=$?
@@ -19,7 +19,9 @@ function finish {
         # command has failed and a dump file was created
         # move the dump file out of vol/ into the tmp dir
         mv vol/$bname_in.dump.tar $work_dir
-        echo "failed $retcode"
+        echo "failed: $retcode"
+        echo "wrote $work_dir/$bname_in.dump.tar"
+        echo "wrote $work_dir/$bname_in.log"
     fi
 }
 trap finish EXIT
@@ -30,7 +32,6 @@ timeout --preserve-status $duration \
     docker run \
         --volume $(pwd):/data \
         --volume $in:/data/$bname_in \
-        --user $(id -u $(whoami)) \
         strip-coverletter /data/$bname_in /data/vol/$bname_out > $logfile 2>&1
 
 # move final file to original destination    
