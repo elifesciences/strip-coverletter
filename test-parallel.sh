@@ -3,8 +3,6 @@
 
 set -e
 
-rm -rf ptests/
-
 pollmem () {
     while true; do
         # memory available as a percentage
@@ -21,6 +19,7 @@ pollmem_pid=$!
 
 function finish {
     kill $pollmem_pid
+    rm -rf ptests/
 }
 trap finish EXIT
 
