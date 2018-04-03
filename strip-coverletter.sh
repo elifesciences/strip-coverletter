@@ -160,7 +160,7 @@ if [ -f $squashed_pdf ]; then
         mv $squashed_pdf $output_pdf
     else
         log "- preferring decapped"
-        rm "$squashed_pdf"
+        rm -f "$squashed_pdf"
     fi
 else
     log "- preferring decapped"
@@ -168,6 +168,6 @@ fi
 
 log 'removing temporary files+dir ...'
 # removes log file. if log file detected in FINISH handler (above), it assumes script failed
-rm $explodeddir/*
+rm -f $explodeddir/*
 rmdir "$explodeddir"
 log "- all done  •ᴗ•"
