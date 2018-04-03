@@ -38,4 +38,4 @@ timeout --preserve-status $duration \
 mv "vol/$bname_out" $out
 
 # remove log file
-rm "$logfile"
+rm -f "$logfile"
