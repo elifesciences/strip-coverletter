@@ -13,7 +13,7 @@ RUN apt-get install ghostscript openjdk-8-jre-headless wget git unzip xpdf-utils
 WORKDIR /opt/strip-coverletter
 
 # create a worker to run the script as
-RUN useradd worker --uid 1000 --shell /bin/bash --no-create-home
+RUN useradd worker --uid 1001 --shell /bin/bash --no-create-home
 RUN chown worker .
 
 # install sejda
