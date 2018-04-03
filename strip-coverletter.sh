@@ -133,26 +133,37 @@ log "- wrote $output_pdf"
 log 'squashing pdf ...'
 
 squashed_pdf="$output_pdf-squashed.pdf"
-./downsample.sh $output_pdf $squashed_pdf 2>&1
-log "- wrote $squashed_pdf"
+rm -f $squashed_pdf # remove target if it already exists
+
+./downsample.sh $output_pdf $squashed_pdf 2>&1 || true # allow errors
+
+if [ -f $squashed_pdf ]; then
+    log "- wrote $squashed_pdf"
+else
+    log "- failed to write $squashed_pdf"
+fi
 
 log "thinking ..."
 
-decap_bytes=$(du --bytes $output_pdf | cut --fields 1)
-squashed_bytes=$(du --bytes $squashed_pdf | cut --fields 1)
-savings_bytes=$((decap_bytes-squashed_bytes))
+if [ -f $squashed_pdf ]; then
+    decap_bytes=$(du --bytes $output_pdf | cut --fields 1)
+    squashed_bytes=$(du --bytes $squashed_pdf | cut --fields 1)
+    savings_bytes=$((decap_bytes-squashed_bytes))
 
-log "- decapped: $decap_bytes"
-log "- squashed: $squashed_bytes"
-log "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
+    log "- decapped: $decap_bytes"
+    log "- squashed: $squashed_bytes"
+    log "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
 
-# only use the squashed pdf if it's smaller than the decapped version
-if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
-    log "- preferring squashed"
-    mv $squashed_pdf $output_pdf
+    # only use the squashed pdf if it's smaller than the decapped version
+    if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
+        log "- preferring squashed"
+        mv $squashed_pdf $output_pdf
+    else
+        log "- preferring decapped"
+        rm "$squashed_pdf"
+    fi
 else
     log "- preferring decapped"
-    rm "$squashed_pdf"
 fi
 
 log 'removing temporary files+dir ...'
