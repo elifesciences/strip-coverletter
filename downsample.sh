@@ -19,6 +19,9 @@ function finish {
 }
 trap finish EXIT
 
+# https://stackoverflow.com/questions/2172352
+beginswith() { case $2 in "$1"*) true;; *) false;; esac; }
+
 # reads stdout from `gs` and looks for error strings
 # exits with status 2 if one detected
 # strip-coverletter.sh catches any errors and will prefer decap over squashed
@@ -30,7 +33,7 @@ function detect_errors {
         error=""
 
         # "**** Error reading a content stream. The page may be incomplete."
-        if [[ "$line" == "**** Error: "* ]]; then
+        if beginswith $line '**** Error: '; then
             error=$line
         fi
 
@@ -42,7 +45,7 @@ function detect_errors {
         # if the value of error is not empty, fail
         if [ ! -z "$error" ]; then
             echo ""
-            echo "detected imperfect squash: $error"
+            echo "detected error string: $error"
             exit 2
         fi
     done
