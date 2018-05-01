@@ -17,8 +17,8 @@ RUN useradd worker --uid 1001 --shell /bin/bash --no-create-home
 RUN chown worker .
 
 # install sejda
-RUN wget --quiet https://github.com/torakiki/sejda/releases/download/v3.2.38/sejda-console-3.2.38-bin.zip
-RUN unzip -q sejda-console-3.2.38-bin.zip && ln -s sejda-console-3.2.38 sejda
+RUN wget --quiet https://github.com/torakiki/sejda/releases/download/v3.2.49/sejda-console-3.2.49-bin.zip
+RUN unzip -q sejda-console-3.2.49-bin.zip && ln -s sejda-console-3.2.49 sejda
 ENV PATH="/opt/strip-coverletter:/opt/strip-coverletter/sejda/bin:${PATH}"
 
 # drop privileges
