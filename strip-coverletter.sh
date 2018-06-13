@@ -43,6 +43,13 @@ fi
 
 outdir=$(dirname $(readlink -m $outfile))
 
+# fail early if we can't write to the output directory
+touch $outdir/.write-test || {
+    echo "cannot write to $outdir, failing"
+    exit 1;
+}
+rm $outdir/.write-test
+
 pdf=$(basename $infile);
 tempdir=/tmp # TODO: make this a third optional parameter to script
 explodeddir=$tempdir/$pdf-exploded
