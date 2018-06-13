@@ -19,9 +19,6 @@ function finish {
 }
 trap finish EXIT
 
-# https://stackoverflow.com/questions/2172352
-beginswith() { case $2 in "$1"*) true;; *) false;; esac; }
-
 # reads stdout from `gs` and looks for error strings
 # exits with status 2 if one detected
 # strip-coverletter.sh catches any errors and will prefer decap over squashed
@@ -32,15 +29,10 @@ function detect_errors {
         # reset error
         error=""
 
-        # "**** Error reading a content stream. The page may be incomplete."
-        if beginswith $line '**** Error: '; then
+        known_errors='Error:|Warning:|Output may be incorrect'
+        python error_detector.py "$known_errors" "$line" || {
             error=$line
-        fi
-
-        # "Output may be incorrect."
-        if [ "$line" = "Output may be incorrect." ]; then
-            error=$line
-        fi
+        }
 
         # if the value of error is not empty, fail
         if [ ! -z "$error" ]; then
