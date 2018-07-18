@@ -1,3 +1,5 @@
 #!/bin/bash
 set -e
-sudo docker build --tag strip-coverletter .
+
+docker build --tag strip-coverletter .
+docker tag strip-coverletter "elifesciences/strip-coverletter:${IMAGE_TAG:-latest}"
