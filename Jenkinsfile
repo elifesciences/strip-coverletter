@@ -19,6 +19,7 @@ elifeLibrary {
     elifeMainlineOnly {
         stage 'Push image', {
             image.push()
+            image.tag('latest').push()
         }
     }
 }
