@@ -20,7 +20,7 @@ errcho() { echo "$@" 1>&2; } # write to stderr
 
 infile=$1
 outfile=$2
-squash=${3:-"--squash=false"}
+squash=${3:-"false"}
 
 if [ ! -f /usr/bin/pdftotext ]; then
     errcho "'pdftotext' not found."
@@ -36,13 +36,12 @@ if ! type -P sejda-console > /dev/null; then
 fi
 
 if [[ ! $infile ]] || [[ ! -f $infile ]] || [[ ! $outfile ]]; then
-    errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf>"
+    errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf> [squash?<true|false>]"
     errcho "Input: ./strip-coverletter.sh $infile $outfile"
     exit 1;
 fi
 
-# optional squash, but only if user passes in "--squash=true"
-squash=${squash#"--squash="} # prune prefix
+# optional squash, but only if user passes in "true" as third parameter
 if [ ! "$squash" = true ]; then
     squash=false
 fi
