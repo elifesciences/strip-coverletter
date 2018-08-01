@@ -20,6 +20,7 @@ errcho() { echo "$@" 1>&2; } # write to stderr
 
 infile=$1
 outfile=$2
+squash=${3:-"false"}
 
 if [ ! -f /usr/bin/pdftotext ]; then
     errcho "'pdftotext' not found."
@@ -35,11 +36,15 @@ if ! type -P sejda-console > /dev/null; then
 fi
 
 if [[ ! $infile ]] || [[ ! -f $infile ]] || [[ ! $outfile ]]; then
-    errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf>"
+    errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf> [squash?<true|false>]"
     errcho "Input: ./strip-coverletter.sh $infile $outfile"
     exit 1;
 fi
 
+# optional squash, but only if user passes in "true" as third parameter
+if [ ! "$squash" = true ]; then
+    squash=false
+fi
 
 outdir=$(dirname $(readlink -m $outfile))
 
@@ -137,22 +142,28 @@ cmd="sejda-console merge --files $pathargs --output $output_pdf --overwrite 2>&1
 eval $cmd
 log "- wrote $output_pdf"
 
-log 'squashing pdf ...'
+squashed_pdf=""
 
-squashed_pdf="$output_pdf-squashed.pdf"
-rm -f $squashed_pdf # remove target if it already exists
+if [ "$squash" = true ]; then
+    log 'squashing pdf ...'
 
-./downsample.sh $output_pdf $squashed_pdf 2>&1 || true # allow errors
+    squashed_pdf="$output_pdf-squashed.pdf"
+    rm -f $squashed_pdf # remove target if it already exists
 
-if [ -f $squashed_pdf ]; then
-    log "- wrote $squashed_pdf"
+    ./downsample.sh $output_pdf $squashed_pdf 2>&1 || true # allow errors
+
+    if [ -f $squashed_pdf ]; then
+        log "- wrote $squashed_pdf"
+    else
+        log "- failed to squash $squashed_pdf"
+    fi
 else
-    log "- failed to write $squashed_pdf"
+    log 'skipping squash (use "./strip-coverletter.sh $infile $outfile --squash=true")'
 fi
 
 log "thinking ..."
 
-if [ -f $squashed_pdf ]; then
+if [ -f "$squashed_pdf" ]; then
     decap_bytes=$(du --bytes $output_pdf | cut --fields 1)
     squashed_bytes=$(du --bytes $squashed_pdf | cut --fields 1)
     savings_bytes=$((decap_bytes-squashed_bytes))
