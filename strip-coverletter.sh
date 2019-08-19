@@ -9,13 +9,6 @@ cd "$(dirname "$0")"
 # use the local sejda-console rather than rely on one being installed
 PATH="sejda-console/bin:$PATH" 
 
-description="script that detects and removes the leading cover sheet from the 
-             special article PDF sent to peer reviewers"
-
-author="Luke Skibinski <l.skibinski@elifesciences.org>"
-copyright="eLife Sciences"
-license="GNU GPLv3"
-
 errcho() { echo "$@" 1>&2; } # write to stderr
 
 infile=$1
@@ -53,7 +46,7 @@ touch $outdir/.write-test || {
     echo "cannot write to $outdir, failing"
     exit 1;
 }
-rm $outdir/.write-test
+rm "$outdir/.write-test"
 
 pdf=$(basename $infile);
 tempdir=/tmp # TODO: make this a third optional parameter to script
@@ -148,7 +141,7 @@ if [ "$squash" = true ]; then
     log 'squashing pdf ...'
 
     squashed_pdf="$output_pdf-squashed.pdf"
-    rm -f $squashed_pdf # remove target if it already exists
+    rm -f "$squashed_pdf" # remove target if it already exists
 
     ./downsample.sh $output_pdf $squashed_pdf 2>&1 || true # allow errors
 
@@ -186,6 +179,6 @@ fi
 
 log 'removing temporary files+dir ...'
 # removes log file. if log file detected in FINISH handler (above), it assumes script failed
-rm -f $explodeddir/*
+rm -f "$explodeddir/*"
 rmdir "$explodeddir"
 log "- all done  •ᴗ•"
