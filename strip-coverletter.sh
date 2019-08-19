@@ -179,6 +179,6 @@ fi
 
 log 'removing temporary files+dir ...'
 # removes log file. if log file detected in FINISH handler (above), it assumes script failed
-rm -f "$explodeddir/*"
+rm -f $explodeddir/*
 rmdir "$explodeddir"
 log "- all done  •ᴗ•"
