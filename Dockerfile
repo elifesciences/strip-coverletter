@@ -1,7 +1,5 @@
 FROM ubuntu:xenial
 
-MAINTAINER Luke Skibinski <l.skibinski@elifesciences.org>
-
 # install some basics
 RUN apt-get update
 RUN apt-get install ghostscript openjdk-8-jre-headless wget git unzip xpdf-utils -y --no-install-recommends

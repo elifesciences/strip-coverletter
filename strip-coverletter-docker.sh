@@ -35,7 +35,7 @@ timeout --preserve-status $duration \
         strip-coverletter /data/$bname_in /data/vol/$bname_out > $logfile 2>&1
 
 # move final file to original destination    
-mv "vol/$bname_out" $out
+mv -f "vol/$bname_out" $out
 
 # remove log file
 rm -f "$logfile"
