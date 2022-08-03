@@ -12,11 +12,11 @@ bname_out=${out##*/}
 # this is easier than modifying elife-bot code.
 tmp_dir="/tmp"
 if [ -e "/bot-tmp" ]; then
-    tmp_dir="/bot-tmp/tmp"
+    tmp_dir="/bot-tmp"
 fi
 
 work_dir_root=${3:-$tmp_dir}
-work_dir="$work_dir_root/decap" # "/tmp/decap"
+work_dir="$work_dir_root/decap" # "/tmp/decap", "/bot-tmp/decap"
 logfile="$work_dir/$bname_in.log" # "/tmp/decap/baz.pdf.log"
 
 mkdir -p vol "$work_dir" "$out_dir"
