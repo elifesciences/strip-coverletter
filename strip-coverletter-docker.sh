@@ -38,6 +38,7 @@ trap finish EXIT
 duration=1200
 timeout --preserve-status $duration \
     docker run \
+        --rm \
         --volume "$(pwd):/data" \
         --volume "$in:/data/$bname_in" \
         strip-coverletter "/data/$bname_in" "/data/vol/$bname_out" > "$logfile" 2>&1
