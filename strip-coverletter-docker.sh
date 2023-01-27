@@ -27,7 +27,7 @@ logfile="$work_dir/$bname_in.log" # "/tmp/decap/baz.pdf.log"
 # creates directories "./vol" "/tmp/decap" "/path/to/write/output"
 mkdir -p vol "$work_dir" "$out_dir"
 
-# ./vol needs to be writable by the host user with id 1001
+# ./vol needs to be writable by the guest user with id 1001
 chmod 777 ./vol
 
 function finish {
@@ -53,17 +53,7 @@ timeout --preserve-status $duration \
         strip-coverletter "/data/$bname_in" "/data/vol/$bname_out" \
         >"$logfile" 2>&1
 
-# output files must be owned by the calling user
-host_id=`id -u`
-docker run \
-    --rm -it \
-    --user root \
-    --entrypoint /bin/sh \
-    -e HOST_UID=`id -u` \
-    -v /data/vol:/tmp \
-    strip-coverletter -c 'chown -R ${HOST_UID}:${HOST_UID} /tmp/'
-
-# normalise ownership/permissions of any output. got the idea here:
+# output files must be owned by the calling (host) user. got the idea here:
 # https://stackoverflow.com/questions/26500270/understanding-user-file-ownership-in-docker-how-to-avoid-changing-permissions-o/26514736#answer-54317162
 docker run \
     --rm -it \
