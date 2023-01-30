@@ -50,7 +50,7 @@ timeout --preserve-status $duration \
         --rm \
         --volume "$(pwd):/data" \
         --volume "$in:/data/$bname_in" \
-        strip-coverletter "/data/$bname_in" "/data/vol/$bname_out" \
+        elifesciences/strip-coverletter "/data/$bname_in" "/data/vol/$bname_out" \
         >"$logfile" 2>&1
 
 # output files must be owned by the calling (host) user. got the idea here:
@@ -61,7 +61,7 @@ docker run \
     --entrypoint "/bin/sh" \
     --env HOST_UID=$(id -u) \
     --volume "$(pwd)/vol:/data" \
-    strip-coverletter -c 'chown -R ${HOST_UID}:${HOST_UID} /data/'
+    elifesciences/strip-coverletter -c 'chown -R ${HOST_UID}:${HOST_UID} /data/'
 
 # move final file to original destination
 # mv -f "vol/file.pdf" "/path/to/write/output/file.pdf"
