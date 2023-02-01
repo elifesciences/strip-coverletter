@@ -50,7 +50,8 @@ timeout --preserve-status $duration \
         --rm \
         --volume "$(pwd):/data" \
         --volume "$in:/data/$bname_in" \
-        elifesciences/strip-coverletter "/data/$bname_in" "/data/vol/$bname_out"
+        elifesciences/strip-coverletter "/data/$bname_in" "/data/vol/$bname_out" \
+        >"$logfile" 2>&1
 
 # output files must be owned by the calling (host) user. got the idea here:
 # https://stackoverflow.com/questions/26500270/understanding-user-file-ownership-in-docker-how-to-avoid-changing-permissions-o/26514736#answer-54317162
