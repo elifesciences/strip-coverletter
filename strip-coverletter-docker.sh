@@ -47,22 +47,20 @@ trap finish EXIT
 duration=1200
 timeout --preserve-status $duration \
     docker run \
+        --rm \
         --volume "$(pwd):/data" \
         --volume "$in:/data/$bname_in" \
-        elifesciences/strip-coverletter "/data/$bname_in" "/data/vol/$bname_out" \
-        >"$logfile" 2>&1
+        elifesciences/strip-coverletter "/data/$bname_in" "/data/vol/$bname_out"
 
 # output files must be owned by the calling (host) user. got the idea here:
 # https://stackoverflow.com/questions/26500270/understanding-user-file-ownership-in-docker-how-to-avoid-changing-permissions-o/26514736#answer-54317162
-# lsh@2023-01-31: disabled, files are not being copied and to their destination and files appearing in /opt/elife-bot:
-# https://github.com/elifesciences/issues/issues/8088
-#docker run \
-#    --rm -it \
-#    --user root \
-#    --entrypoint "/bin/sh" \
-#    --env HOST_UID=$(id -u) \
-#    --volume "$(pwd)/vol:/data" \
-#    elifesciences/strip-coverletter -c 'chown -R ${HOST_UID}:${HOST_UID} /data/'
+docker run \
+    --rm -it \
+    --user root \
+    --entrypoint "/bin/sh" \
+    --env HOST_UID=$(id -u) \
+    --volume "$(pwd)/vol:/data" \
+    elifesciences/strip-coverletter -c 'chown -R ${HOST_UID}:${HOST_UID} /data/'
 
 # move final file to original destination
 # mv -f "vol/file.pdf" "/path/to/write/output/file.pdf"
