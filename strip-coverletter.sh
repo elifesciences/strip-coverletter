@@ -13,7 +13,6 @@ errcho() { echo "$@" 1>&2; } # write to stderr
 
 infile=$1
 outfile=$2
-squash=${3:-"false"}
 
 if [ ! -f /usr/bin/pdftotext ]; then
     errcho "'pdftotext' not found."
@@ -29,14 +28,9 @@ if ! type -P sejda-console > /dev/null; then
 fi
 
 if [[ ! $infile ]] || [[ ! -f $infile ]] || [[ ! $outfile ]]; then
-    errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf> [squash?<true|false>]"
+    errcho "Usage: ./strip-coverletter.sh <in-pdf> <out-pdf>"
     errcho "Input: ./strip-coverletter.sh $infile $outfile"
     exit 1;
-fi
-
-# optional squash, but only if user passes in "true" as third parameter
-if [ ! "$squash" = true ]; then
-    squash=false
 fi
 
 outdir=$(dirname $(readlink -m $outfile))
@@ -134,48 +128,6 @@ done
 cmd="sejda-console merge --files $pathargs --output $output_pdf --overwrite 2>&1"
 eval $cmd
 log "- wrote $output_pdf"
-
-squashed_pdf=""
-
-if [ "$squash" = true ]; then
-    log 'squashing pdf ...'
-
-    squashed_pdf="$output_pdf-squashed.pdf"
-    rm -f "$squashed_pdf" # remove target if it already exists
-
-    ./downsample.sh $output_pdf $squashed_pdf 2>&1 || true # allow errors
-
-    if [ -f $squashed_pdf ]; then
-        log "- wrote $squashed_pdf"
-    else
-        log "- failed to squash $squashed_pdf"
-    fi
-else
-    log 'skipping squash (use "./strip-coverletter.sh $infile $outfile --squash=true")'
-fi
-
-log "thinking ..."
-
-if [ -f "$squashed_pdf" ]; then
-    decap_bytes=$(du --bytes $output_pdf | cut --fields 1)
-    squashed_bytes=$(du --bytes $squashed_pdf | cut --fields 1)
-    savings_bytes=$((decap_bytes-squashed_bytes))
-
-    log "- decapped: $decap_bytes"
-    log "- squashed: $squashed_bytes"
-    log "- savings:  $savings_bytes ($((($savings_bytes/1024)/1024))MB)"
-
-    # only use the squashed pdf if it's smaller than the decapped version
-    if [ $((decap_bytes>squashed_bytes)) == 1 ]; then
-        log "- preferring squashed"
-        mv $squashed_pdf $output_pdf
-    else
-        log "- preferring decapped"
-        rm -f "$squashed_pdf"
-    fi
-else
-    log "- preferring decapped"
-fi
 
 log 'removing temporary files+dir ...'
 # removes log file. if log file detected in FINISH handler (above), it assumes script failed

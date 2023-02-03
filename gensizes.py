@@ -11,21 +11,14 @@ def size(path):
         return os.path.getsize(path)
 
 for fname in fnames:
-    # find the decapped and squashed versions
+    # find the decapped version
     matches = filter(lambda decap: decap.startswith(fname), decaps)
     if not matches:
         continue
     
-    decap = squashed = None
-    if len(matches) == 2:
-        decap, squashed = sorted(matches)
-        assert squashed.endswith('.pdf-squashed.pdf'), fname
-
-    sizes = original_size, decap_size, squashed_size = size(join(pdfdir, fname)), size(join(decapdir, decap)), size(join(decapdir, squashed))
-
-
-    
-    if all(sizes):
-        print "%s,%s,%s,%s" % (fname, original_size, decap_size, squashed_size)
+    decap = matches[0]
+    original_size, decap_size = size(join(pdfdir, fname)), size(join(decapdir, decap))
+    if original_size and decap_size:
+        print "%s,%s,%s,%s" % (fname, original_size, decap_size)
     else:
         print 'skipping',fname,size
