@@ -14,7 +14,7 @@ env
 
 mkdir -p tests
 cd tests
-aws s3 sync s3://elife-test-fixtures/strip-coverletter .
+#aws s3 sync s3://elife-test-fixtures/strip-coverletter .
 
 #deactivate
 #rm -rf venv

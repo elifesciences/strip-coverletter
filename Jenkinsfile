@@ -13,6 +13,7 @@ elifeLibrary {
     }
 
     stage 'Run tests', {
+        sh "aws s3 sync s3://elife-test-fixtures/strip-coverletter tests"
         elifeLocalTests './project_tests.sh'
     }
 
