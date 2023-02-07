@@ -33,12 +33,25 @@ chmod 777 ./vol
 function finish {
     retcode=$?
     if [[ $retcode -gt 0 ]]; then
-        # command has failed and a dump file was created
-        # move the dump file out of vol/ into the tmp dir
-        mv "vol/$bname_in.dump.tar" "$work_dir"
+        # failed
+    
         echo "failed: $retcode"
-        echo "wrote $work_dir/$bname_in.dump.tar"
-        echo "wrote $work_dir/$bname_in.log"
+        if [ -f "vol/$bname_in.dump.tar" ]; then
+            # command has failed and a dump file was created
+            # move the dump file out of vol/ into the work dir
+            mv "vol/$bname_in.dump.tar" "$work_dir"
+            echo "wrote $work_dir/$bname_in.dump.tar"
+        fi
+        echo "wrote $logfile"
+    else 
+        # success
+
+        # move final file to original destination
+        # mv -f "./vol/file.pdf" "/path/to/write/output/file.pdf"
+        mv -f "vol/$bname_out" "$out"
+
+        # remove log file
+        rm -f "$logfile"
     fi
 }
 trap finish EXIT
@@ -63,9 +76,3 @@ docker run \
     --volume "$(pwd)/vol:/data" \
     elifesciences/strip-coverletter -c 'chown -R ${HOST_UID}:${HOST_UID} /data/'
 
-# move final file to original destination
-# mv -f "vol/file.pdf" "/path/to/write/output/file.pdf"
-mv -f "vol/$bname_out" "$out"
-
-# remove log file
-rm -f "$logfile"
