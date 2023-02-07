@@ -1,6 +1,8 @@
+venv/
 bucket/
 bucket-pdf/
 bucket-pdf-decap/
 sejda*
 out.pdf
 tests/
+test-results/
