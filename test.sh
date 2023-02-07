@@ -6,9 +6,11 @@
 
 set -e
 
+test_fixture_dir=${1:-"tests"}
+
 function testdecap {
     expected_rc=$1
-    pdf_dir="tests/$2"
+    pdf_dir="$test_fixture_dir/$2" # /ext/cached-repositories/strip-coverletter-test-fixtures/working-fixtures
     
     for pdffile in `ls $pdf_dir/*.pdf`; do
         pdffile_bname=${pdffile##*/} # tests/working-fixtures/foo.pdf => foo.pdf
