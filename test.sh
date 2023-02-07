@@ -5,21 +5,28 @@
 # short
 
 set -e
-#set -xv
 
 function testdecap {
     expected_rc=$1
     pdf_dir="tests/$2"
     
     for pdffile in `ls $pdf_dir/*.pdf`; do
+        pdffile_bname=${pdffile##*/} # tests/working-fixtures/foo.pdf => foo.pdf
         set +e
         echo "testing $pdffile"
         ./strip-coverletter.sh $pdffile tmp.pdf &> /dev/null
         rc=$?
         set -e
         if [ $rc -ne $expected_rc ]; then
+            # assertion failed.
             echo "got return code '$rc', expected $expected_rc for fixture $pdffile"
+        else
+            # assertion succeeded. 
+            # remove the dump file (written to same dir as output file), if it exists.
+            rm -f "$pdffile_bname.dump.tar"
         fi
+
+        # whatever the case, remove the output file if it exists
         rm -f tmp.pdf
     done
 }
