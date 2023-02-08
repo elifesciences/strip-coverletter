@@ -1,14 +1,12 @@
 # strip-coverletter.sh
 
-This script detects and removes the leading cover sheet from the PDF sent to 
-peer reviewers by EJP.
+This script detects and removes the leading cover sheet from the PDF sent to peer reviewers by EJP.
 
 ## Dependencies
 
 * java 1.8
 * sejda-console
 * pdftotext
-* ghostscript
 
 Optional:
 
@@ -16,8 +14,7 @@ Optional:
 
 ## Installation
 
-`java 1.8`, `pdftotext` and `ghostscript` are typically all available from your
-distribution's package manager.
+`java 1.8` and `pdftotext` are typically all available from your distribution's package manager.
 
 `sejda-console` can be installed with the `./download-sejda.sh` script.
 
