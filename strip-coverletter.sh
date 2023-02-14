@@ -68,7 +68,7 @@ function finish {
         tar -cf $dumpfile $explodeddir
         errcho "wrote $dumpfile"
     fi
-    #exit $1 # $1 wasn't always present, $? uses the return code of last run cmd
+    #exit $1 # don't do this, retcode is preserved.
 }
 trap finish EXIT
 
