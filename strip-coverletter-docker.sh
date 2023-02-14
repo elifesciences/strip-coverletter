@@ -69,7 +69,7 @@ timeout --preserve-status $duration \
 # output files must be owned by the calling (host) user. got the idea here:
 # https://stackoverflow.com/questions/26500270/understanding-user-file-ownership-in-docker-how-to-avoid-changing-permissions-o/26514736#answer-54317162
 docker run \
-    --rm -it \
+    --rm \
     --user root \
     --entrypoint "/bin/sh" \
     --env HOST_UID=$(id -u) \
