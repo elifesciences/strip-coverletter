@@ -58,9 +58,12 @@ trap finish EXIT
 
 # 20 minutes, length of PackagePOA timeout
 duration=1200
+# --cpus="1.0" how much CPU to use, distributed across cores. '1.0' is 100% of one core. '1.0' is 50% of two cores.
 timeout --preserve-status $duration \
     docker run \
         --rm \
+        --cpus="1.0" \
+        --memory="128m" \
         --volume "$(pwd):/data" \
         --volume "$in:/data/$bname_in" \
         elifesciences/strip-coverletter "/data/$bname_in" "/data/vol/$bname_out" \
