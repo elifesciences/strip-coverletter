@@ -117,16 +117,7 @@ if [ ! "$ncp" -gt -1 ]; then
 fi
 
 log "writing pdf ..."
-i=$ncp
-pathargs=""
-#echo "endofcoverletter='$i' totalpages='$total_pages'"
-while [ "$i" -le "$total_pages" ]; do
-    pathargs="$pathargs $explodeddir/$i\_$pdf"
-    i=$(( $i + 1 ))
-done
-
-cmd="sejda-console merge --files $pathargs --output $output_pdf --overwrite 2>&1"
-eval $cmd
+sejda-console extractpages --files $infile --output $output_pdf --existingOutput overwrite --pageSelection "$ncp-" 2>&1
 log "- wrote $output_pdf"
 
 log 'removing temporary files+dir ...'
